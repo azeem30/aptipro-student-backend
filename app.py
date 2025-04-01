@@ -182,12 +182,16 @@ def login():
                 (email, )
             )
             tests_submitted = cursor.fetchone()["COUNT(*)"]
+            if not tests_submitted:
+                tests_submitted = 0
             cursor.execute(
                 """SELECT SUM(marks) FROM results WHERE student_email = %s""",
                 (email, )
             )
             total_score = cursor.fetchone()["SUM(marks)"]
-            avg_score = (total_score / tests_submitted) * 100
+            if not total_score:
+                total_score = 0
+            avg_score = (total_score / tests_submitted) * 100 if tests_submitted > 0 else 0
             user_data = {
                 "id": student["id"],
                 "email": student["email"],
