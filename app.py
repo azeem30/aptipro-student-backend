@@ -7,7 +7,16 @@ from dotenv import load_dotenv
 from cryptography.fernet import Fernet
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={
+    r"/*": {
+        "origins": [
+            "https://aptipro-student-frontend.vercel.app",
+            "http://localhost:3000"  
+        ],
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"]
+    }
+})
 
 load_dotenv()
 key = os.getenv("KEY")
@@ -22,6 +31,14 @@ def teardown_request(exception):
     global connection
     if connection:
         connection.close()
+
+@app.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Origin', 'https://aptipro-teacher-frontend.vercel.app')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    response.headers.add('Access-Control-Allow-Credentials', 'true')
+    return response
 
 def encrypt_data(data):
     cipher_suite = Fernet(key)
