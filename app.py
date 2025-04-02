@@ -198,6 +198,11 @@ def login():
             if not total_score:
                 total_score = 0
             avg_score = (total_score / tests_submitted) * 100 if tests_submitted > 0 else 0
+            cursor.execute(
+                """SELECT * FROM results WHERE student_email = %s ORDER BY id DESC LIMIT 10""",
+                (email,)
+            )
+            recent_results = cursor.fetchall()
             user_data = {
                 "id": student["id"],
                 "email": student["email"],
@@ -206,7 +211,8 @@ def login():
                 "verified": student["verified"],
                 "subjects": subjects_list,
                 "tests_done": tests_submitted,
-                "average_score": avg_score
+                "average_score": avg_score,
+                "recent_results": recent_results
             }
             return jsonify({
                 "success": True,
