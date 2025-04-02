@@ -347,6 +347,39 @@ def get_results():
             "error": str(e)
         }), 500
 
+@app.route("/update_profile", methods=["POST"])
+def update_profile():
+    try:
+        data = request.get_json()
+        required_fields = ["id", "name", "email", "department", "password"]
+        for field in required_fields:
+            if field not in data:
+                return jsonify({"success": False, "message" : "Incomplete form details"}), 400
+        id = data['id']
+        name = data['name']
+        email = data['email']
+        department = data['department']
+        password = data['password']
+        encrypted_password = encrypt_data(password)
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """UPDATE students 
+                SET name = %s, email = %s, dept_name = %s, password = %s 
+                WHERE id = %s""",
+                (name, email, department, encrypted_password, id)
+            )
+            connection.commit()
+            return jsonify({
+                "success": True,
+                "message": "Profile updated successfully"
+            }), 200
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "message": "An error occurred updating profile",
+            "error": str(e)
+        }), 500
+
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5000))
     app.run(debug=True, host='0.0.0.0', port=port)
